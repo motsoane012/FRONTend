@@ -1135,7 +1135,7 @@ function registerManager() {
   //HERE IS FOR MAKING SURE THAT details entered in name should be characters not just numbers
   if (!/^[a-zA-Z\s]+$/.test(name)){msg.style.color='#b91c1c';msg.innerText='⚠️ Name must contain letters only, no numbers or symbols.';return;}
   if (!/^(?=.*[a-zA-Z])(?=.*[0-9])[a-zA-Z0-9]+$/.test(user)){msg.style.color='#b91c1c';msg.innerText='⚠️ Username must contain both letters and numbers (e.g. Thabo1).';return;}
- fetch('http://127.0.0.1:5000/register_manager', {
+ fetch('https://backend-production-8ef8b.up.railway.app/register_manager', {
   method:'POST', headers:{'Content-Type':'application/json'},
   body: JSON.stringify({full_name:name, username:user, email, password:pass})
 }).then(r=>r.json()).then(d=>{
@@ -1170,7 +1170,7 @@ function registerSupplier() {
   if (!/^[a-zA-Z\s]+$/.test(name)){msg.style.color='#b91c1c';msg.innerText='⚠️ Name must contain letters only, no numbers or symbols.';return;}
   if (!/^(?=.*[a-zA-Z])(?=.*[0-9])[a-zA-Z0-9]+$/.test(user)){msg.style.color='#b91c1c';msg.innerText='⚠️ Username must contain both letters and numbers (e.g. Thabo1).';return;}
   if (registeredSuppliers.find(s=>s.username.toLowerCase()===user.toLowerCase())){msg.style.color='#b91c1c';msg.innerText='⚠️ That username is already taken.';return;}
- fetch('http://127.0.0.1:5000/register_supplier', {
+ fetch('https://backend-production-8ef8b.up.railway.app/register_supplier', {
   method:'POST', headers:{'Content-Type':'application/json'},
   body: JSON.stringify({full_name:name,username:user,company,phone,email,parts_offered:partsText,password:pass})
 }).then(r=>r.json()).then(d=>{
@@ -1195,7 +1195,7 @@ function registerSalesAssistant() {
   if (!/^[a-zA-Z\s]+$/.test(name)){msg.style.color='#b91c1c';msg.innerText='⚠️ Name must contain letters only, no numbers or symbols.';return;}
   if (!/^(?=.*[a-zA-Z])(?=.*[0-9])[a-zA-Z0-9]+$/.test(user)){msg.style.color='#b91c1c';msg.innerText='⚠️ Username must contain both letters and numbers (e.g. Thabo1).';return;}
   if (registeredSalesAssistants.find(s=>s.username.toLowerCase()===user.toLowerCase())){msg.style.color='#b91c1c';msg.innerText='⚠️ That username is already taken.';return;}
- fetch('http://127.0.0.1:5000/register_sa', {
+ fetch('https://backend-production-8ef8b.up.railway.app/register_sa', {
   method:'POST', headers:{'Content-Type':'application/json'},
   body: JSON.stringify({full_name:name,username:user,email,password:pass,counter_name:counter||'Counter 1'})
 }).then(r=>r.json()).then(d=>{
@@ -1232,7 +1232,7 @@ function renderPendingSuppliers() {
 function approveSupplier(id) {
   const s = registeredSuppliers.find(x => x.id === id); if (!s) return;
   confirmAction(`Approve supplier "${s.name}" (${s.username})?`, () => {
-    fetch(`http://127.0.0.1:5000/approve_supplier/${s.id}`, {
+    fetch(`https://backend-production-8ef8b.up.railway.app/approve_supplier/${s.id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status: 'approved', username: s.username })
@@ -1259,7 +1259,7 @@ function rejectSupplier(id) {
   const s = registeredSuppliers.find(x => x.id === id); if (!s) return;
   const label = s.status === 'approved' ? 'Revoke access for' : 'Reject';
   confirmAction(`${label} supplier "${s.name}"?`, () => {
-    fetch(`http://127.0.0.1:5000/approve_supplier/${s.id}`, {
+    fetch(`https://backend-production-8ef8b.up.railway.app/approve_supplier/${s.id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status: 'rejected', username: s.username })
@@ -1481,7 +1481,7 @@ function renderPendingTable() {
   </tbody></table>`;
 
   function addPartToDB(name, price, qty) {
-  fetch("http://127.0.0.1:5000/add_part", {
+  fetch("https://backend-production-8ef8b.up.railway.app/add_part", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ name, price, qty })
@@ -1504,7 +1504,7 @@ function supplierLogin() {
   const errEl = document.getElementById('supplierLoginError');
   if (!user || !pass) { errEl.innerText = '⚠️ Please enter username and password.'; return; }
 
-  fetch('http://127.0.0.1:5000/login', {
+  fetch('https://backend-production-8ef8b.up.railway.app/login', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ username: user, password: pass })
@@ -1546,7 +1546,7 @@ function salesAssistantLogin() {
   const user=document.getElementById('salesAssistantUsername').value.trim(), pass=document.getElementById('salesAssistantPassword').value;
   const errEl=document.getElementById('salesAssistantLoginError');
   if (!user||!pass){errEl.innerText='⚠️ Please enter username and password.';return;}
-  fetch('http://127.0.0.1:5000/login',{
+  fetch('https://backend-production-8ef8b.up.railway.app/login',{
     method:'POST',headers:{'Content-Type':'application/json'},
     body:JSON.stringify({username:user,password:pass})
   }).then(r=>r.json()).then(data=>{
@@ -1555,7 +1555,7 @@ function salesAssistantLogin() {
     errEl.innerText='';
     const found={id:data.id,name:data.name,username:user,counter:data.counter||'Counter 1'};
     currentRole='salesAssistant'; currentUser=found;
-    fetch('http://127.0.0.1:5000/sa_login_session',{
+    fetch('https://backend-production-8ef8b.up.railway.app/sa_login_session',{
       method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({sa_id:found.id,counter_name:found.counter})
     }).then(r=>r.json()).then(s=>{currentUser.sessionId=s.session_id;});
@@ -1583,7 +1583,7 @@ function logoutSalesAssistant() {
       d.todayTotal=todaySalesTotal;
       d.lastReceipt=lastReceiptData;
       if(currentUser.sessionId){
-        fetch(`http://127.0.0.1:5000/sa_logout_session/${currentUser.sessionId}`,{method:'PUT'});
+        fetch(`https://backend-production-8ef8b.up.railway.app/sa_logout_session/${currentUser.sessionId}`,{method:'PUT'});
       }
       managerNotifications.unshift({id:nextId(),message:`🔴 ${currentUser.name} logged out from ${currentUser.counter||'Counter 1'}`,datetime:new Date().toLocaleString(),read:false});
       updateNotifBells();
@@ -1642,7 +1642,7 @@ function supplyPart(){
   const supplierId=currentUser?currentUser.id:null;
   if (!name||isNaN(price)||isNaN(qty)||qty<1){alert("Please fill Part Name, Unit Price and Quantity.");return;}
   const existing=parts.find(p=>p.name.toLowerCase()===name.toLowerCase());
-  fetch('http://127.0.0.1:5000/add_delivery',{
+  fetch('https://backend-production-8ef8b.up.railway.app/add_delivery',{
     method:'POST',headers:{'Content-Type':'application/json'},
     body:JSON.stringify({supplier_id:supplierId,supplier_name:supplierName,part_id:existing?existing.id:null,part_name:name,qty,unit_price:price,total,type,condition,year,description})
   }).then(r=>r.json()).then(data=>{
@@ -1769,7 +1769,7 @@ function sendMessage() {
     recipient_id = 1; // manager always id=1
   }
 
-  fetch('http://127.0.0.1:5000/send_message', {
+  fetch('https://backend-production-8ef8b.up.railway.app/send_message', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ sender_role, sender_id, recipient_id, body: msg })
@@ -1798,7 +1798,7 @@ function renderMessageThread(supplierId = null) {
   const sid = supplierId || currentUser?.id;
   if (!sid) { thread.innerHTML = ''; return; }
 
-  fetch(`http://127.0.0.1:5000/messages/${sid}`)
+  fetch(`https://backend-production-8ef8b.up.railway.app/messages/${sid}`)
   .then(r => r.json())
   .then(msgs => {
     if (!msgs.length) {
@@ -1898,7 +1898,7 @@ function addNewItemFromModal(){
   const imageFile=document.getElementById('modalImage').files[0];
   if(!name||!type||isNaN(price)||isNaN(qty)){alert("Please fill all required fields.");return;}
   const doAdd=(imageData)=>{
-    fetch('http://127.0.0.1:5000/add_part', {
+    fetch('https://backend-production-8ef8b.up.railway.app/add_part', {
       method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({name,type,condition,year:year||null,description:desc,selling_price:price,supplier_price:0,qty,supplier_name:supp,image:imageData||null})
     }).then(r=>r.json()).then(d=>{
@@ -2065,7 +2065,7 @@ function confirmStockUpdate(){
   if(idx===''||isNaN(newQty)||newQty<0){msgEl.style.color='#b91c1c';msgEl.innerText='⚠️ Please select a part and enter a valid quantity.';return;}
   const part=parts[idx];
   const oldQty=part.qty;
-  fetch('http://127.0.0.1:5000/update_stock',{
+  fetch('https://backend-production-8ef8b.up.railway.app/update_stock',{
     method:'POST',headers:{'Content-Type':'application/json'},
     body:JSON.stringify({sa_id:currentUser?.id,part_id:part.id,new_qty:newQty,note})
   }).then(r=>r.json()).then(data=>{
@@ -2211,7 +2211,7 @@ function confirmPayment(){
   }
   const customerName=document.getElementById('payCustomerName').value.trim()||'Walk-in Customer';
   const saleItems=[...cart];
-  fetch('http://127.0.0.1:5000/add_sale',{
+  fetch('https://backend-production-8ef8b.up.railway.app/add_sale',{
     method:'POST',headers:{'Content-Type':'application/json'},
     body:JSON.stringify({
       sa_id:currentUser?.id,
