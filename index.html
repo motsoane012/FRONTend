@@ -1075,10 +1075,6 @@ function getSAData(saId) {
 //  REGISTRATION
 // ══════════════════════════════════════
 function openRegModal(tab) {
-  if (tab === 'manager' && registeredManagers.length > 0) {
-    alert('⚠️ A manager account already exists. Only one manager is allowed.');
-    return;
-  }
   document.getElementById('regModal').classList.add('show');
   switchRegTab(tab || 'supplier');
 }
@@ -1121,11 +1117,6 @@ function switchRegTab(tab) {
 }*/
 function registerManager() {
   const msg=document.getElementById('regMgrMsg');
-  if (registeredManagers.length > 0) {
-    msg.style.color='#b91c1c';
-    msg.innerText='⚠️ A manager account already exists. Only one manager is allowed.';
-    return;
-  }
   const name=document.getElementById('regMgrName').value.trim(), user=document.getElementById('regMgrUser').value.trim();
   const email=document.getElementById('regMgrEmail').value.trim(), pass=document.getElementById('regMgrPass').value, pass2=document.getElementById('regMgrPass2').value;
   if (!name||!user||!pass){msg.style.color='#b91c1c';msg.innerText='⚠️ Name, username and password are required.';return;}
@@ -1530,16 +1521,28 @@ function supplierLogin() {
 }
 
 function managerLogin() {
-  const user=document.getElementById('managerUsername').value.trim(), pass=document.getElementById('managerPassword').value;
-  const errEl=document.getElementById('managerLoginError');
-  if (!user||!pass){errEl.innerText='⚠️ Please enter username and password.';return;}
-  const found=registeredManagers.find(m=>m.username.toLowerCase()===user.toLowerCase()&&m.password===pass);
-  if (!found){errEl.innerText='⚠️ Invalid username or password.';return;}
-  errEl.innerText='';
-  document.getElementById('managerNameLabel').textContent=found.name;
-  currentRole='manager'; currentUser=found;
-  loadParts();
-  showPage('managerDashboard');
+  const user = document.getElementById('managerUsername').value.trim();
+  const pass = document.getElementById('managerPassword').value;
+  const errEl = document.getElementById('managerLoginError');
+  if (!user || !pass) { errEl.innerText = '⚠️ Please enter username and password.'; return; }
+
+  fetch('https://backend-production-8ef8b.up.railway.app/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username: user, password: pass })
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (data.error) { errEl.innerText = '⚠️ ' + data.error; return; }
+    if (data.role !== 'manager') { errEl.innerText = '⚠️ Not a manager account.'; return; }
+    errEl.innerText = '';
+    currentRole = 'manager';
+    currentUser = { id: data.id, name: data.name, username: user };
+    document.getElementById('managerNameLabel').textContent = data.name;
+    loadParts();
+    showPage('managerDashboard');
+  })
+  .catch(() => { errEl.innerText = '⚠️ Could not connect to server.'; });
 }
 
 function salesAssistantLogin() {
