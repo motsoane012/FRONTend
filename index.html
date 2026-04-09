@@ -2566,24 +2566,27 @@ function renderSupplierHistory() {
 renderTables();
 updateNotifBells();
 function setSellingPrice(index){
-  const p=parts[index];
-  if(!p) return;
-  const input=prompt(`Set selling price for "${p.name}"\nSupplier cost: M ${(p.supplierPrice||p.price).toFixed(2)}\n\nEnter your selling price:`);
-  if(input===null) return;
-  const val=parseFloat(input);
-  if(isNaN(val)||val<=0){alert('Please enter a valid price.');return;}
+  const p = parts[index];
+  if (!p) return;
+  const input = prompt(`Set selling price for "${p.name}"\nSupplier cost: M ${(p.supplierPrice||p.price).toFixed(2)}\n\nEnter your selling price:`);
+  if (input === null) return;
+  const val = parseFloat(input);
+  if (isNaN(val) || val <= 0) { alert('Please enter a valid price.'); return; }
+
   fetch(`${API}/set_selling_price/${p.id}`, {
-  method: 'PUT',   // ← also PUT, not POST
-  headers: {'Content-Type': 'application/json'},
-  body: JSON.stringify({selling_price: val})
-})
-  }).then(r=>r.json()).then(d=>{
-    if(d.error){alert('⚠️ '+d.error);return;}
-    parts[index].sellingPrice=val;
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ selling_price: val })
+  })
+  .then(r => r.json())
+  .then(d => {
+    if (d.error) { alert('⚠️ ' + d.error); return; }
+    parts[index].sellingPrice = val;
     renderTables();
     renderSAProducts();
     alert(`✅ Selling price for "${p.name}" set to M ${val.toFixed(2)}`);
-  }).catch(()=>alert('⚠️ Could not save to server.'));
+  })
+  .catch(() => alert('⚠️ Could not save to server.'));
 }
 
 function loadParts() {
