@@ -1026,6 +1026,7 @@
 </div>
 
 <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+  const API = "https://backend-production-8ef8b.up.railway.app";
 // ══════════════════════════════════════
 //  DATA
 // ══════════════════════════════════════
@@ -1537,6 +1538,7 @@ function managerLogin() {
   errEl.innerText='';
   document.getElementById('managerNameLabel').textContent=found.name;
   currentRole='manager'; currentUser=found;
+  loadParts();
   showPage('managerDashboard');
 }
 
@@ -1568,6 +1570,7 @@ function salesAssistantLogin() {
     document.getElementById('assistantDate').textContent=new Date().toLocaleDateString('en-GB',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
     managerNotifications.unshift({id:nextId(),message:`🟢 ${found.name} logged in at ${found.counter}`,datetime:new Date().toLocaleString(),read:false});
     updateNotifBells();
+    loadParts();
     showPage('salesAssistantDashboard');
   }).catch(()=>{errEl.innerText='⚠️ Could not connect to server.';});
 }
@@ -1897,7 +1900,7 @@ function addNewItemFromModal(){
   const doAdd=(imageData)=>{
     fetch('http://127.0.0.1:5000/add_part', {
       method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({name,type,condition,year:year||null,description:desc,selling_price:price,supplier_price:0,qty,supplier_name:supp})
+      body: JSON.stringify({name,type,condition,year:year||null,description:desc,selling_price:price,supplier_price:0,qty,supplier_name:supp,image:imageData||null})
     }).then(r=>r.json()).then(d=>{
       if(d.error){alert('Error: '+d.error);return;}
       parts.push({id:d.part_id,name,type,condition,year,description:desc,price,qty,supplier:supp,onOrder:false,image:imageData||null});
@@ -2566,36 +2569,41 @@ function setSellingPrice(index){
   if(input===null) return;
   const val=parseFloat(input);
   if(isNaN(val)||val<=0){alert('Please enter a valid price.');return;}
-  parts[index].sellingPrice=val;
-  renderTables();
-  alert(`✅ Selling price for "${p.name}" set to M ${val.toFixed(2)}`);
+  fetch(API + '/update_selling_price',{
+    method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({part_id:p.id,selling_price:val})
+  }).then(r=>r.json()).then(d=>{
+    if(d.error){alert('⚠️ '+d.error);return;}
+    parts[index].sellingPrice=val;
+    renderTables();
+    renderSAProducts();
+    alert(`✅ Selling price for "${p.name}" set to M ${val.toFixed(2)}`);
+  }).catch(()=>alert('⚠️ Could not save to server.'));
 }
 
 function loadParts() {
-  fetch(API + "/parts")
+  fetch(API + '/parts')
     .then(res => res.json())
     .then(data => {
-      console.log("Parts:", data);
-
-      const table = document.getElementById("partsTableBody");
-      if (!table) return;
-
-      table.innerHTML = "";
-
-      data.forEach(part => {
-        const row = `
-          <tr>
-            <td>${part.id}</td>
-            <td>${part.name}</td>
-            <td>${part.type || ""}</td>
-            <td>${part.price}</td>
-            <td>${part.qty}</td>
-          </tr>
-        `;
-        table.innerHTML += row;
-      });
+      parts = data.map(p => ({
+        id: p.id,
+        name: p.name,
+        type: p.type || '',
+        condition: p.condition || 'New',
+        year: p.year || '',
+        description: p.description || '',
+        price: parseFloat(p.price) || 0,
+        supplierPrice: parseFloat(p.supplier_price) || parseFloat(p.price) || 0,
+        sellingPrice: parseFloat(p.selling_price) || parseFloat(p.price) || 0,
+        qty: parseInt(p.qty) || 0,
+        supplier: p.supplier_name || '',
+        onOrder: false,
+        image: p.image || null
+      }));
+      renderTables();
+      renderSAProducts();
     })
-    .catch(err => console.error(err));
+    .catch(err => console.error('Could not load parts:', err));
 }
 
 function addPart() {
